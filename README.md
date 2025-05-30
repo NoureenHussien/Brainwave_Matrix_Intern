@@ -22,7 +22,7 @@ It helps explore customer behavior, product performance, shipping efficiency, an
 - `README.md`: This description
 
 ## 📷 Preview
-- ![Dashboard Preview](dashboard_preview.png)
+ ![Dashboard Preview](dashboard_preview.png)
 
 ## ▶️ How to Run
 Make sure you have Python installed, then:
