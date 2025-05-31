@@ -632,7 +632,7 @@ with tab4:
 
     pd.set_option("styler.render.max_elements", max(350000, filtered_df_with_rfm.size))
 
-    st.dataframe(filtered_df_with_rfm.head(500).style.format({
+    st.dataframe(filtered_df_with_rfm.head(300).style.format({
         "Sales": '${:,.2f}',
         "Profit": '${:,.2f}',
         "Quantity": '{:,.0f}',
