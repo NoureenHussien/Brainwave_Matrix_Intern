@@ -299,15 +299,6 @@ if 'Region' in filtered_df.columns:
     if selected_region:
         filtered_df = filtered_df[filtered_df['Region'].isin(selected_region)]
 
-if 'State' in filtered_df.columns:
-    selected_state = st.sidebar.multiselect(
-        "Select states",
-        options=filtered_df['State'].unique().tolist(),
-        key='state_filter'
-    )
-    if selected_state:
-        filtered_df = filtered_df[filtered_df['State'].isin(selected_state)]
-
 if 'City' in filtered_df.columns:
     selected_city = st.sidebar.multiselect(
         "Select cities",
@@ -407,18 +398,18 @@ with tab1:
         st.warning("Required columns (Sales, Profit, Quantity, Category) not found for scatter plot.")
 
 
-    st.markdown("### Top States by Sales and Profit")
-    if 'State' in filtered_df.columns:
-        state_data = filtered_df.groupby('State').agg({
+    st.markdown("### Top cities by Sales and Profit")
+    if 'City' in filtered_df.columns:
+        city_data = filtered_df.groupby('City').agg({
             'Sales': 'sum',
             'Profit': 'sum'
         }).nlargest(30, 'Sales').reset_index()
 
-        fig = px.bar(state_data,
-                    x='State',
+        fig = px.bar(city_data,
+                    x='City',
                     y=['Sales', 'Profit'],
                     barmode='group',
-                    labels={'value': 'Amount ($)', 'variable': 'Metric', 'State': 'State'},
+                    labels={'value': 'Amount ($)', 'variable': 'Metric', 'City': 'City'},
                     color_discrete_map={'Sales': COLOR_PALETTE["primary_blue"], 'Profit': COLOR_PALETTE["success_green"]})
 
         fig.update_layout(
@@ -445,16 +436,16 @@ with tab2:
 
         # Step 2: RFM Scoring using qcut with fallbacks
         def assign_scores(column, ascending=True):
+            n_unique = column.nunique()
+            q_val = min(5, n_unique)
+            if q_val < 2:
+                return pd.Series([1] * len(column), index=column.index)
             try:
-                labels = range(5, 0, -1) if ascending else range(1, 6)
-                return pd.qcut(column, q=5, labels=labels, duplicates='drop').astype(int)
+                labels = list(range(q_val, 0, -1)) if ascending else list(range(1, q_val + 1))
+                return pd.qcut(column, q=q_val, labels=labels, duplicates='drop').astype(int)
             except ValueError:
-                q_val = min(5, column.nunique())
-                if q_val > 0:
-                    labels = range(q_val, 0, -1) if ascending else range(1, q_val + 1)
-                    return pd.qcut(column, q=q_val, labels=labels, duplicates='drop').astype(int)
-                else:
-                    return pd.Series([1] * len(column))
+                # fallback: assign all to 1 if qcut fails
+                return pd.Series([1] * len(column), index=column.index)
 
         rfm['R_Score'] = assign_scores(rfm['Recency'], ascending=True)
         rfm['F_Score'] = assign_scores(rfm['Frequency'], ascending=False)
